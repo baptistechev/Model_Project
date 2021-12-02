@@ -3,9 +3,9 @@
 
 #define aritc
 
-#define add(a,b) (a >= 4294967290 | b >= 4294967290) ? (__uint32_t)(((__uint64_t)a+(__uint64_t)b)%N) : (a+b)%N
+#define add(a,b) (__uint32_t)(((__uint64_t)a+(__uint64_t)b)%N)
 #define sub(a,b) (a>=b) ? ((a-b)%N) : (a-b+N)
-#define prod(a,b) (a >= 4294967290 | b >= 4294967290) ? (__uint32_t)(((__uint64_t)a*(__uint64_t)b)%N) : (a*b)%N
+#define prod(a,b) (__uint32_t)(((__uint64_t)a*(__uint64_t)b)%N)
 
 #define max(a,b) a>b ? a : b
 #define min(a,b) a<b ? a : b
@@ -69,6 +69,16 @@ poly32_t static inline prodPoly(poly32_t p, poly32_t q){
 
     return r;
 
+}
+
+poly32_t static inline increaseDegre(poly32_t p, __uint32_t k){
+    /*
+    *   Augment de k le degre de chaque terme du polynome p.
+    */
+    poly32_t q = allocate(p->length+k);
+    for(int i=0;i<p->length;i++)
+        q->coeffs[i+k] = p->coeffs[i];
+    return q;
 }
 
 void static inline affichage(poly32_t p){
