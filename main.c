@@ -66,6 +66,84 @@ poly32_t static inline karatsuba(poly32_t p, poly32_t q){
     return addPoly(a, addPoly( increaseDegre(b, k), increaseDegre(c, 2*k) ));
 }
 
+poly32_t* splitPoly3(poly32_t p, __uint32_t k){
+    /*
+    *   Renvoit un pointeur sur un tableau contenant 3 polynomes de tailles respectives k
+    */
+    poly32_t p0 = allocate(k);
+    poly32_t p1 = allocate(k);
+    poly32_t p2 = allocate(k);
+
+    for(__uint32_t i=0;i<k;i++){
+        p0->coeffs[i] = 0;
+        p1->coeffs[i] = 0;
+        p2->coeffs[i] = 0;
+    } 
+
+    for(__uint32_t i=0;i<k;i++) p0->coeffs[i] = p->coeffs[i];
+    for(__uint32_t i=0;i<k;i++) p1->coeffs[i] = p->coeffs[i+k];
+    for(__uint32_t i=0;i<p->length-2*k;i++) p2->coeffs[i] = p->coeffs[i+2*k];
+
+    poly32_t* res = malloc(3*sizeof(poly32_t)); 
+    res[0] = p0;
+    res[1] = p1;
+    res[2] = p2;
+    return res;
+}
+
+poly32_t static inline toom3(poly32_t p, poly32_t q){
+    /*
+    *   Performe la multiplication de deux polynomes en utilisant l'algorithme de karatsuba 
+    */
+
+    __uint32_t k = max(floor(p->length/3),floor(q->length/3))+1;
+
+    // if(d-1 <= T) return prodPoly(p,q); 
+
+    // __uint32_t k = (__uint32_t)floor(d/2) + 1;
+
+    poly32_t* res;
+    poly32_t p0,p1,p2,q0,q1,q2;
+    poly32_t p_v0,p_v1,p_v2,p_v3,p_v4,q_v0,q_v1,q_v2,q_v3,q_v4;
+    poly32_t r_v0,r_v1,r_v2,r_v3,r_v4;
+
+    res = splitPoly3(p,k);
+    p0 = res[0];
+    p1 = res[1];
+    p2 = res[2];
+
+    res = splitPoly3(q,k);
+    q0 = res[0];
+    q1 = res[1];
+    q2 = res[2];
+
+    p_v0 = p0;
+    p_v1 = addPoly(p2,addPoly(p1,p0));
+    p_v2 = addPoly(subPoly(p2,p1),p0);
+    p_v3 = addPoly( constantMult(p2,4), addPoly( constantMult(p1,2), p0));
+    p_v4 = p2;
+
+    q_v0 = q0;
+    q_v1 = addPoly(q2,addPoly(q1,q0));
+    q_v2 = addPoly(subPoly(q2,q1),q0);
+    q_v3 = addPoly( constantMult(q2,4), addPoly( constantMult(q1,2), q0));
+    q_v4 = q2;
+
+    r_v0 = prodPoly(p_v0,q_v0);
+    r_v1 = prodPoly(p_v1,q_v1);
+    r_v2 = prodPoly(p_v2,q_v2);
+    r_v3 = prodPoly(p_v3,q_v3);
+    r_v4 = prodPoly(p_v4,q_v4);
+
+    affichage(r_v0);
+    affichage(r_v1);
+    affichage(r_v2);
+    affichage(r_v3);
+    affichage(r_v4);
+
+    return p;
+}
+
 int main(int argc, char** argv){
     if(argc!=2) return 1;
     N = (__uint32_t) atoi(argv[1]);
@@ -77,22 +155,25 @@ int main(int argc, char** argv){
 
     int size = 1000;
 
-    poly32_t a = allocate(size);
-    poly32_t b = allocate(size);
+    poly32_t a = allocate(10);
+    poly32_t b = allocate(9);
 
-    srand(time(NULL));
+    // srand(time(NULL));
 
-    for(int i=0;i<size;i++){
-        a->coeffs[i] = rand()%1000; 
-        b->coeffs[i] = rand()%1000;
-    }
+    // for(int i=0;i<size;i++){
+    //     a->coeffs[i] = rand()%1000; 
+    //     b->coeffs[i] = rand()%1000;
+    // }
 
-    // __uint32_t ac[] = {2,4,3,2,1};
-    // __uint32_t bc[] = {2,3,1,5,8,7,5,9};
+    __uint32_t ac[] = {5,1,2,0,0,7,0,2,0,3};
+    __uint32_t bc[] = {1,3,0,2,0,8,0,0,7};
 
-    // a->coeffs = ac;
-    // b->coeffs = bc;
+    a->coeffs = ac;
+    b->coeffs = bc;
 
-    timeProd(prodPoly,a,b);
-    timeProd(karatsuba,a,b);
+    // timeProd(prodPoly,a,b);
+    // timeProd(karatsuba,a,b);
+
+    toom3(a,b);
+
 }

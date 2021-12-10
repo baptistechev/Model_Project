@@ -81,6 +81,12 @@ poly32_t static inline increaseDegre(poly32_t p, __uint32_t k){
     return q;
 }
 
+poly32_t static inline constantMult(poly32_t p, int k){
+    poly32_t q = allocate(p->length);
+    for(int i=0;i<p->length;i++) q->coeffs[i] = p->coeffs[i]*k;
+    return q;
+}
+
 void static inline affichage(poly32_t p){
     printf("%i",p->coeffs[0]);
     for (__uint32_t i = 1; i < p->length; i++)
