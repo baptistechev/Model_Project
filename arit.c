@@ -96,5 +96,8 @@ void static inline affichage(poly32_t p){
     printf("\n");
 }
 
+
+
+
 //evolution temps calcul degré
 //impact modulo sur les performance (difference sans / avec)

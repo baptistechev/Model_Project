@@ -91,6 +91,46 @@ poly32_t* splitPoly3(poly32_t p, __uint32_t k){
     return res;
 }
 
+int maxDeg (poly32_t* L,int n){
+    int max=0;
+    for(int i=0;i<n;i++){
+        if(L[i]->length>max) max=L[i]->length;
+    }
+    return max;
+}
+
+poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
+
+    poly32_t r0=R0;
+
+    poly32_t*L1=malloc(5*sizeof(poly32_t));
+    L1[0]=constantMult(R0,-1/2);L1[1]=constantMult(R1,1);L1[2]=constantMult(R2,-1/3);L1[3]=constantMult(R3,-1/6);L1[4]=constantMult(R4,2);
+    poly32_t r1=allocate(maxDeg(L1,5));
+    for(int i=0;i<r1->length;i++) r1->coeffs[i]=0;
+    for(int i =0;i<5;i++) r1=addPoly(r1,L1[i]);
+
+    poly32_t*L2=malloc(4*sizeof(poly32_t));
+    L2[0]=constantMult(R0,-1);L2[1]=constantMult(R1,1/2);L2[2]=constantMult(R2,1/2);L2[3]=constantMult(R3,-1);
+    poly32_t r2=allocate(maxDeg(L2,4));
+    for(int i=0;i<r2->length;i++) r2->coeffs[i]=0;
+    for(int i =0;i<4;i++) r2=addPoly(r2,L2[i]);
+
+    poly32_t*L3=malloc(5*sizeof(poly32_t));
+    L3[0]=constantMult(R0,1/2);L3[1]=constantMult(R1,-1/2);L3[2]=constantMult(R2,-1/6);L3[3]=constantMult(R3,1/6);L3[4]=constantMult(R4,-2);
+    poly32_t r3=allocate(maxDeg(L3,5));
+    for(int i=0;i<r3->length;i++) r3->coeffs[i]=0;
+    for(int i =0;i<5;i++) r1=addPoly(r3,L3[i]);
+
+    poly32_t r4=R4;
+
+    poly32_t* lret=malloc(5*sizeof(poly32_t));
+    lret[0]=r0;lret[1]=r1;lret[2]=r2;lret[3]=r3;lret[4]=r4;
+
+    return lret;
+
+}
+
+
 poly32_t static inline toom3(poly32_t p, poly32_t q){
     /*
     *   Performe la multiplication de deux polynomes en utilisant l'algorithme de karatsuba 
@@ -141,8 +181,16 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     affichage(r_v3);
     affichage(r_v4);
 
+    poly32_t* lInter=interpol(r_v0,r_v1,r_v2,r_v3,r_v4);
+
+    printf("\ninterpolation\n");
+    for(int i=0;i<5;i++){
+        affichage(lInter[i]);
+    }
+
     return p;
 }
+
 
 int main(int argc, char** argv){
     if(argc!=2) return 1;
