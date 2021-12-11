@@ -92,6 +92,9 @@ poly32_t* splitPoly3(poly32_t p, __uint32_t k){
 }
 
 int maxDeg (poly32_t* L,int n){
+    /*
+    *   Renvoit le degré maximum d'une liste de polynôme
+    */
     int max=0;
     for(int i=0;i<n;i++){
         if(L[i]->length>max) max=L[i]->length;
@@ -101,25 +104,28 @@ int maxDeg (poly32_t* L,int n){
 
 poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
 
+    /*
+    *   Retourne la liste de polynome r0...r4 correspondant au resultat de l'interpolation des valuation R0...R4 avec la matrice de Vandermonde
+    */
     poly32_t r0=R0;
 
     poly32_t*L1=malloc(5*sizeof(poly32_t));
-    L1[0]=constantMult(R0,-1/2);L1[1]=constantMult(R1,1);L1[2]=constantMult(R2,-1/3);L1[3]=constantMult(R3,-1/6);L1[4]=constantMult(R4,2);
+    L1[0]=constantMult(R0,modInverse(sub(N,2)));L1[1]=R1;L1[2]=constantMult(R2,modInverse(sub(N,3)));L1[3]=constantMult(R3,modInverse(sub(N,6)));L1[4]=constantMult(R4,2);
     poly32_t r1=allocate(maxDeg(L1,5));
     for(int i=0;i<r1->length;i++) r1->coeffs[i]=0;
     for(int i =0;i<5;i++) r1=addPoly(r1,L1[i]);
 
-    poly32_t*L2=malloc(4*sizeof(poly32_t));
-    L2[0]=constantMult(R0,-1);L2[1]=constantMult(R1,1/2);L2[2]=constantMult(R2,1/2);L2[3]=constantMult(R3,-1);
-    poly32_t r2=allocate(maxDeg(L2,4));
+    poly32_t*L2=malloc(5*sizeof(poly32_t));
+    L2[0]=constantMult(R0,sub(N,1));L2[1]=constantMult(R1,modInverse(2));L2[2]=constantMult(R2,modInverse(2));L2[3]=constantMult(R3,0);L2[4]=constantMult(R4,sub(N,1));
+    poly32_t r2=allocate(maxDeg(L2,5));
     for(int i=0;i<r2->length;i++) r2->coeffs[i]=0;
-    for(int i =0;i<4;i++) r2=addPoly(r2,L2[i]);
+    for(int i =0;i<5;i++) r2=addPoly(r2,L2[i]);
 
     poly32_t*L3=malloc(5*sizeof(poly32_t));
-    L3[0]=constantMult(R0,1/2);L3[1]=constantMult(R1,-1/2);L3[2]=constantMult(R2,-1/6);L3[3]=constantMult(R3,1/6);L3[4]=constantMult(R4,-2);
+    L3[0]=constantMult(R0,modInverse(2));L3[1]=constantMult(R1,modInverse(sub(N,2)));L3[2]=constantMult(R2,modInverse(sub(N,6)));L3[3]=constantMult(R3,modInverse(6));L3[4]=constantMult(R4,sub(N,2));
     poly32_t r3=allocate(maxDeg(L3,5));
     for(int i=0;i<r3->length;i++) r3->coeffs[i]=0;
-    for(int i =0;i<5;i++) r1=addPoly(r3,L3[i]);
+    for(int i =0;i<5;i++) r3=addPoly(r3,L3[i]);
 
     poly32_t r4=R4;
 
@@ -137,12 +143,11 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     */
 
     __uint32_t k = max(floor(p->length/3),floor(q->length/3))+1;
-
     // if(d-1 <= T) return prodPoly(p,q); 
 
     // __uint32_t k = (__uint32_t)floor(d/2) + 1;
 
-    poly32_t* res;
+    poly32_t *res;
     poly32_t p0,p1,p2,q0,q1,q2;
     poly32_t p_v0,p_v1,p_v2,p_v3,p_v4,q_v0,q_v1,q_v2,q_v3,q_v4;
     poly32_t r_v0,r_v1,r_v2,r_v3,r_v4;
@@ -175,20 +180,29 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     r_v3 = prodPoly(p_v3,q_v3);
     r_v4 = prodPoly(p_v4,q_v4);
 
+    /*
     affichage(r_v0);
     affichage(r_v1);
     affichage(r_v2);
     affichage(r_v3);
     affichage(r_v4);
+    */
+    //printf("\ninterpolation\n");
 
     poly32_t* lInter=interpol(r_v0,r_v1,r_v2,r_v3,r_v4);
 
-    printf("\ninterpolation\n");
-    for(int i=0;i<5;i++){
+    /*for(int i=0;i<5;i++){
         affichage(lInter[i]);
+    }*/
+
+    poly32_t ret=allocate(p->length+q->length-1);
+    for(int i=0;i<ret->length;i++) ret->coeffs[i]=0;
+
+    for(int i=0;i<5;i++){
+        ret=addPoly(ret,increaseDegre(lInter[i],i*k));
     }
 
-    return p;
+    return ret;
 }
 
 
@@ -200,8 +214,6 @@ int main(int argc, char** argv){
     // __uint32_t f = 4294967290;
 
     // printf("%u\n",add(e,f));
-
-    printf("Inv:%d\n",modInverse(3));
 
     int size = 1000;
 
@@ -223,7 +235,11 @@ int main(int argc, char** argv){
 
     // timeProd(prodPoly,a,b);
     // timeProd(karatsuba,a,b);
+    printf("Input polys:\n");
+    affichage(a);
+    affichage(b);
 
-    toom3(a,b);
+    printf("Toom3\n");
+    affichage(toom3(a,b));
 
 }
