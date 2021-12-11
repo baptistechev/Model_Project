@@ -201,6 +201,8 @@ int main(int argc, char** argv){
 
     // printf("%u\n",add(e,f));
 
+    printf("Inv:%d\n",modInverse(3));
+
     int size = 1000;
 
     poly32_t a = allocate(10);

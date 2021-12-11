@@ -32,6 +32,26 @@ poly32_t static inline copyTo(poly32_t p, poly32_t q){
     return q;
 }
 
+__uint32_t static inline modInverse(__uint32_t a)
+{
+    __uint32_t m = N;
+    __uint32_t y = 0, x = 1;
+ 
+    if (m == 1)
+        return 0;
+    while (a > 1) {
+        __uint32_t q = a / m;
+        __uint32_t t = m;
+        m = a % m, a = t;
+        t = y;
+        y = sub(x,prod(q,y));
+        x = t;
+    }
+    if (x < 0)
+        x = add(x,N);
+    return x;
+}
+
 poly32_t static inline addPoly(poly32_t p, poly32_t q){
     
     poly32_t r = allocate(max(p->length,q->length));
