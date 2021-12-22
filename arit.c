@@ -32,16 +32,17 @@ poly32_t static inline copyTo(poly32_t p, poly32_t q){
     return q;
 }
 
-int static inline modInverse(__uint32_t a)
+__uint32_t static inline modInverse(__uint32_t a)
 {
-    int m = N;
-    int y = 0, x = 1;
+    __uint32_t m = N;
+    __uint32_t y = 0, x = 1;
  
     if (m == 1)
         return 0;
+
     while (a > 1) {
-        int q = a / m;
-        int t = m;
+        __uint32_t q = a / m;
+        __uint32_t t = m;
         m = a % m, a = t;
         t = y;
         y = sub(x,prod(q,y));
@@ -51,6 +52,22 @@ int static inline modInverse(__uint32_t a)
         x = add(x,N);
     return x;
 }
+
+/*__uint32_t static inline modInverse(__uint32_t a)
+{
+    int r1=a,r2=N,u1=0,v1=1,u2=1,v2=0;
+    while(r2!=0)
+    {
+        int q=r1/r2;
+        int r3=r1,u3=u1,v3=v1;
+        r1 = r2, u1 = u2, v1 = v2;
+        r2 = sub(r3,prod(q,r2)), u2 = sub(u3,prod(q,u2)), v2 = sub(v3,prod(q,v2));
+    }
+
+    return v1;
+    
+}*/
+
 
 poly32_t static inline addPoly(poly32_t p, poly32_t q){
     
@@ -103,7 +120,7 @@ poly32_t static inline increaseDegre(poly32_t p, __uint32_t k){
 
 poly32_t static inline constantMult(poly32_t p, int k){
     poly32_t q = allocate(p->length);
-    for(int i=0;i<p->length;i++) q->coeffs[i] = p->coeffs[i]*k;
+    for(int i=0;i<p->length;i++) q->coeffs[i] = prod(p->coeffs[i],k);
     return q;
 }
 
