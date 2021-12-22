@@ -91,52 +91,6 @@ poly32_t* splitPoly3(poly32_t p, __uint32_t k){
     return res;
 }
 
-int maxDeg (poly32_t* L,int n){
-    /*
-    *   Renvoit le degré maximum d'une liste de polynôme
-    */
-    int max=0;
-    for(int i=0;i<n;i++){
-        if(L[i]->length>max) max=L[i]->length;
-    }
-    return max;
-}
-
-poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
-
-    /*
-    *   Retourne la liste de polynome r0...r4 correspondant au resultat de l'interpolation des valuation R0...R4 avec la matrice de Vandermonde
-    */
-    poly32_t r0=R0;
-
-    poly32_t*L1=malloc(5*sizeof(poly32_t));
-    L1[0]=constantMult(R0,modInverse(sub(N,2)));L1[1]=R1;L1[2]=constantMult(R2,modInverse(sub(N,3)));L1[3]=constantMult(R3,modInverse(sub(N,6%N)));L1[4]=constantMult(R4,2);
-    poly32_t r1=allocate(maxDeg(L1,5));
-    for(int i=0;i<r1->length;i++) r1->coeffs[i]=0;
-    for(int i =0;i<5;i++) r1=addPoly(r1,L1[i]);
-
-    poly32_t*L2=malloc(5*sizeof(poly32_t));
-    L2[0]=constantMult(R0,sub(N,1));L2[1]=constantMult(R1,modInverse(2));L2[2]=constantMult(R2,modInverse(2));L2[3]=constantMult(R3,0);L2[4]=constantMult(R4,sub(N,1));
-    poly32_t r2=allocate(maxDeg(L2,5));
-    for(int i=0;i<r2->length;i++) r2->coeffs[i]=0;
-    for(int i =0;i<5;i++) r2=addPoly(r2,L2[i]);
-
-    poly32_t*L3=malloc(5*sizeof(poly32_t));
-    L3[0]=constantMult(R0,modInverse(2));L3[1]=constantMult(R1,modInverse(sub(N,2)));L3[2]=constantMult(R2,modInverse(sub(N,6%N)));L3[3]=constantMult(R3,modInverse(6%N));L3[4]=constantMult(R4,sub(N,2));
-    poly32_t r3=allocate(maxDeg(L3,5));
-    for(int i=0;i<r3->length;i++) r3->coeffs[i]=0;
-    for(int i =0;i<5;i++) r3=addPoly(r3,L3[i]);
-
-    poly32_t r4=R4;
-
-    poly32_t* lret=malloc(5*sizeof(poly32_t));
-    lret[0]=r0;lret[1]=r1;lret[2]=r2;lret[3]=r3;lret[4]=r4;
-
-    return lret;
-
-}
-
-
 poly32_t static inline toom3(poly32_t p, poly32_t q){
     /*
     *   Performe la multiplication de deux polynomes en utilisant l'algorithme de karatsuba 
@@ -205,10 +159,13 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     return ret;
 }
 
-
 int main(int argc, char** argv){
+
     if(argc!=2) return 1;
     N = (__uint32_t) atoi(argv[1]);
+
+    //Initialisation of vandermonde matrix in current prime field
+    initVandermonde();
 
     // __uint32_t e = 4294967290;
     // __uint32_t f = 4294967290;

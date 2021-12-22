@@ -12,6 +12,9 @@
 
 __uint32_t N;
 
+
+__uint32_t *vanMonMatrix;
+
 typedef struct{
     __uint32_t* coeffs;
     int length;
@@ -51,6 +54,30 @@ __uint32_t static inline modInverse(__uint32_t a)
     if (x < 0)
         x = add(x,N);
     return x;
+}
+
+void initVandermonde(){
+
+    vanMonMatrix=malloc((5*5)*sizeof(__uint32_t));
+    vanMonMatrix[0]=1;
+    for (int i = 1; i < 5; i++)vanMonMatrix[i]=0;
+    vanMonMatrix[5]=modInverse(sub(N,2));
+    vanMonMatrix[6]=1;
+    vanMonMatrix[7]=modInverse(sub(N,3));
+    vanMonMatrix[8]=modInverse(sub(N,6%N));
+    vanMonMatrix[9]=2;
+    vanMonMatrix[10]=sub(N,1);
+    vanMonMatrix[11]=modInverse(2);
+    vanMonMatrix[12]=modInverse(2);
+    vanMonMatrix[13]=0;
+    vanMonMatrix[14]=sub(N,1);
+    vanMonMatrix[15]=modInverse(2);
+    vanMonMatrix[16]=modInverse(sub(N,2));
+    vanMonMatrix[17]=modInverse(sub(N,6%N));
+    vanMonMatrix[18]=modInverse(6%N);
+    vanMonMatrix[19]=sub(N,2);
+    for (int i = 20; i < 24; i++)vanMonMatrix[i]=0;
+    vanMonMatrix[24]=1;
 }
 
 /*__uint32_t static inline modInverse(__uint32_t a)
@@ -133,8 +160,75 @@ void static inline affichage(poly32_t p){
     printf("\n");
 }
 
+int maxDeg (poly32_t* L,int n){
+    /*
+    *   Renvoit le degré maximum d'une liste de polynôme
+    */
+    int max=0;
+    for(int i=0;i<n;i++){
+        if(L[i]->length>max) max=L[i]->length;
+    }
+    return max;
+}
 
+// poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
 
+//     /*
+//     *   Retourne la liste de polynome r0...r4 correspondant au resultat de l'interpolation des valuation R0...R4 avec la matrice de Vandermonde
+//     */
+//     poly32_t r0=R0;
+
+//     poly32_t*L1=malloc(5*sizeof(poly32_t));
+//     L1[0]=constantMult(R0,modInverse(sub(N,2)));L1[1]=R1;L1[2]=constantMult(R2,modInverse(sub(N,3)));L1[3]=constantMult(R3,modInverse(sub(N,6%N)));L1[4]=constantMult(R4,2);
+//     poly32_t r1=allocate(maxDeg(L1,5));
+//     for(int i=0;i<r1->length;i++) r1->coeffs[i]=0;
+//     for(int i =0;i<5;i++) r1=addPoly(r1,L1[i]);
+
+//     poly32_t*L2=malloc(5*sizeof(poly32_t));
+//     L2[0]=constantMult(R0,sub(N,1));L2[1]=constantMult(R1,modInverse(2));L2[2]=constantMult(R2,modInverse(2));L2[3]=constantMult(R3,0);L2[4]=constantMult(R4,sub(N,1));
+//     poly32_t r2=allocate(maxDeg(L2,5));
+//     for(int i=0;i<r2->length;i++) r2->coeffs[i]=0;
+//     for(int i =0;i<5;i++) r2=addPoly(r2,L2[i]);
+
+//     poly32_t*L3=malloc(5*sizeof(poly32_t));
+//     L3[0]=constantMult(R0,modInverse(2));L3[1]=constantMult(R1,modInverse(sub(N,2)));L3[2]=constantMult(R2,modInverse(sub(N,6%N)));L3[3]=constantMult(R3,modInverse(6%N));L3[4]=constantMult(R4,sub(N,2));
+//     poly32_t r3=allocate(maxDeg(L3,5));
+//     for(int i=0;i<r3->length;i++) r3->coeffs[i]=0;
+//     for(int i =0;i<5;i++) r3=addPoly(r3,L3[i]);
+
+//     poly32_t r4=R4;
+
+//     poly32_t* lret=malloc(5*sizeof(poly32_t));
+//     lret[0]=r0;lret[1]=r1;lret[2]=r2;lret[3]=r3;lret[4]=r4;
+
+//     return lret;
+
+// }
+
+poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
+
+    poly32_t* lret=malloc(5*sizeof(poly32_t));
+    poly32_t* L=malloc(5*sizeof(poly32_t));
+    lret[0]=R0;
+    lret[4]=R4;
+    for (int i = 1; i < 4; i++)
+    {
+
+        L[0]=constantMult(R0,vanMonMatrix[i*5]);
+        L[1]=constantMult(R1,vanMonMatrix[i*5+1]);
+        L[2]=constantMult(R2,vanMonMatrix[i*5+2]);
+        L[3]=constantMult(R3,vanMonMatrix[i*5+3]);
+        L[4]=constantMult(R4,vanMonMatrix[i*5+4]);
+        
+        poly32_t r=allocate(maxDeg(L,5));
+        for(int i=0;i<r->length;i++) r->coeffs[i]=0;   
+        for(int i =0;i<5;i++) r=addPoly(r,L[i]);
+        lret[i]=r;
+
+    }
+    
+    return lret;
+}
 
 //evolution temps calcul degré
 //impact modulo sur les performance (difference sans / avec)
