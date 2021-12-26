@@ -93,13 +93,17 @@ poly32_t* splitPoly3(poly32_t p, __uint32_t k){
 
 poly32_t static inline toom3(poly32_t p, poly32_t q){
     /*
-    *   Performe la multiplication de deux polynomes en utilisant l'algorithme de karatsuba 
+    *   Performe la multiplication de deux polynomes en utilisant l'algorithme de toom-cook 
     */
 
     __uint32_t k = max(floor(p->length/3),floor(q->length/3))+1;
     // if(d-1 <= T) return prodPoly(p,q); 
 
     // __uint32_t k = (__uint32_t)floor(d/2) + 1;
+
+    if(k<2){
+        return prodPoly(p,q);
+    }
 
     poly32_t *res;
     poly32_t p0,p1,p2,q0,q1,q2;
@@ -128,21 +132,13 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     q_v3 = addPoly( constantMult(q2,4), addPoly( constantMult(q1,2), q0));
     q_v4 = q2;
 
-    if(k<2){
-        r_v0 = prodPoly(p_v0,q_v0);
-        r_v1 = prodPoly(p_v1,q_v1);
-        r_v2 = prodPoly(p_v2,q_v2);
-        r_v3 = prodPoly(p_v3,q_v3);
-        r_v4 = prodPoly(p_v4,q_v4);
-    }
-    else{
-        r_v0 = toom3(p_v0,q_v0);
-        r_v1 = toom3(p_v1,q_v1);
-        r_v2 = toom3(p_v2,q_v2);
-        r_v3 = toom3(p_v3,q_v3);
-        r_v4 = toom3(p_v4,q_v4);
-    }
-  
+
+    r_v0 = toom3(p_v0,q_v0);
+    r_v1 = toom3(p_v1,q_v1);
+    r_v2 = toom3(p_v2,q_v2);
+    r_v3 = toom3(p_v3,q_v3);
+    r_v4 = toom3(p_v4,q_v4);
+    
     /*
     affichage(r_v0);
     affichage(r_v1);
