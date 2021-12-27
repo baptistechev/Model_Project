@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define aritc
 
@@ -11,6 +12,9 @@
 #define min(a,b) a<b ? a : b
 /*-------------------------------------------------------------*/
 
+/*Tests temps exec*/
+double timeI;
+/*----------------*/
 /*--Variables globales--*/
 __uint32_t N;
 __uint32_t *vanMonMatrix;
@@ -187,6 +191,9 @@ poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
     *   Retourne la liste de polynome r0...r4 correspondant au resultat de l'interpolation 
     *   des valuation R0...R4 avec la matrice de Vandermonde
     */
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
 
     poly32_t* lret=malloc(5*sizeof(poly32_t));
     poly32_t* L=malloc(5*sizeof(poly32_t));
@@ -207,6 +214,10 @@ poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
         lret[i]=r;
 
     }
+
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    timeI+=cpu_time_used; 
     
     return lret;
 }

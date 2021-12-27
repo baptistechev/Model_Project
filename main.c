@@ -2,6 +2,7 @@
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define T 100 //Threshold pour karatsuba, degre minimum pour utiliser Ka plutot que naif
 
@@ -70,6 +71,7 @@ poly32_t* splitPoly3(poly32_t p, __uint32_t k){
     /*
     *   Renvoit un pointeur sur un tableau contenant 3 polynomes de tailles respectives k
     */
+
     poly32_t p0 = allocate(k);
     poly32_t p1 = allocate(k);
     poly32_t p2 = allocate(k);
@@ -100,8 +102,8 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     // if(d-1 <= T) return prodPoly(p,q); 
 
     // __uint32_t k = (__uint32_t)floor(d/2) + 1;
-
-    if(k<2){
+    
+    if(k<3){
         return prodPoly(p,q);
     }
 
@@ -146,8 +148,10 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     affichage(r_v3);
     affichage(r_v4);
     */
-    printf("\ninterpolation\n");
-    
+    //printf("\ninterpolation\n");
+
+    //TEST temps d'execution interpol
+   
     poly32_t* lInter=interpol(r_v0,r_v1,r_v2,r_v3,r_v4);
 
     // for(int i=0;i<5;i++){
@@ -177,7 +181,7 @@ int main(int argc, char** argv){
 
     // printf("%u\n",add(e,f));
 
-    int size = 10;
+    int size = 15000;
 
     poly32_t a = allocate(size);
     poly32_t b = allocate(size);
@@ -189,22 +193,26 @@ int main(int argc, char** argv){
         b->coeffs[i] = rand()%N;
     }
 
-    __uint32_t ac[] = {5%N,1%N,2%N,0,0,8%N,0,2%N,0,3%N};
-    __uint32_t bc[] = {1%N,3%N,0,2%N,0,8%N,0,0,7%N};
+    // __uint32_t ac[] = {5%N,1%N,2%N,0,0,8%N,0,2%N,0,3%N};
+    // __uint32_t bc[] = {1%N,3%N,0,2%N,0,8%N,0,0,7%N};
 
     //a->coeffs = ac;
     //b->coeffs = bc;
 
-    printf("mod %d\n",modInverse(1));
+    //printf("mod %d\n",modInverse(1));
+    
+    timeI=0;
+    timeProd(prodPoly,a,b);
+    timeProd(karatsuba,a,b);
+    timeI=0;
+    timeProd(toom3,a,b);
+    printf("timeInterpol:%lf\n",timeI);
+    // printf("Input polys:\n");
+    // affichage(a);
+    // affichage(b);
 
-    // timeProd(prodPoly,a,b);
-    // timeProd(karatsuba,a,b);
-    printf("Input polys:\n");
-    affichage(a);
-    affichage(b);
-
-    printf("Toom3\n");
-    affichage(toom3(a,b));
-    affichage(prodPoly(a,b));
+    // printf("Toom3\n");
+    // affichage(toom3(a,b));
+    // affichage(prodPoly(a,b));
 
 }
