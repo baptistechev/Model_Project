@@ -60,9 +60,16 @@ poly32_t static inline karatsuba(poly32_t p, poly32_t q){
     q0 = res[0];
     q1 = res[1];
 
+    free(res);
+
     poly32_t a = karatsuba(p0,q0);
     poly32_t c = karatsuba(p1,q1);
     poly32_t b = subPoly( subPoly( karatsuba( addPoly(p0,p1), addPoly(q0,q1)) , a) , c);
+
+    deallocate(p0);
+    deallocate(p1);
+    deallocate(q0);
+    deallocate(q1);
 
     return addPoly(a, addPoly( increaseDegre(b, k), increaseDegre(c, 2*k) ));
 }
@@ -122,6 +129,8 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     q1 = res[1];
     q2 = res[2];
 
+    free(res);
+
     p_v0 = p0;
     p_v1 = addPoly(p2,addPoly(p1,p0));
     p_v2 = addPoly(subPoly(p2,p1),p0);
@@ -140,23 +149,17 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     r_v2 = toom3(p_v2,q_v2);
     r_v3 = toom3(p_v3,q_v3);
     r_v4 = toom3(p_v4,q_v4);
-    
-    /*
-    affichage(r_v0);
-    affichage(r_v1);
-    affichage(r_v2);
-    affichage(r_v3);
-    affichage(r_v4);
-    */
-    //printf("\ninterpolation\n");
+
+    deallocate(p0);
+    deallocate(p1);
+    deallocate(p2);
+    deallocate(q0);
+    deallocate(q1);
+    deallocate(q2);
 
     //TEST temps d'execution interpol
    
     poly32_t* lInter=interpol(r_v0,r_v1,r_v2,r_v3,r_v4);
-
-    // for(int i=0;i<5;i++){
-    //     affichage(lInter[i]);
-    // }
 
     poly32_t ret=allocate(p->length+q->length-1);
     for(int i=0;i<ret->length;i++) ret->coeffs[i]=0;
@@ -164,6 +167,9 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     for(int i=0;i<5;i++){
         ret=addPoly(ret,increaseDegre(lInter[i],i*k));
     }
+
+    for(int i=0;i<5;i++) deallocate(lInter[i]);
+    free(lInter);
 
     return ret;
 }
@@ -207,6 +213,9 @@ int main(int argc, char** argv){
     timeI=0;
     timeProd(toom3,a,b);
     printf("timeInterpol:%lf\n",timeI);
+
+    deallocate(a);
+    deallocate(b);
     // printf("Input polys:\n");
     // affichage(a);
     // affichage(b);
