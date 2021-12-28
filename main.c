@@ -182,11 +182,6 @@ int main(int argc, char** argv){
     //Initialisation of vandermonde matrix in current prime field
     initVandermonde();
 
-    // __uint32_t e = 4294967290;
-    // __uint32_t f = 4294967290;
-
-    // printf("%u\n",add(e,f));
-
     int size = 15000;
 
     poly32_t a = allocate(size);
@@ -204,8 +199,6 @@ int main(int argc, char** argv){
 
     //a->coeffs = ac;
     //b->coeffs = bc;
-
-    //printf("mod %d\n",modInverse(1));
     
     timeI=0;
     timeProd(prodPoly,a,b);
@@ -216,12 +209,4 @@ int main(int argc, char** argv){
 
     deallocate(a);
     deallocate(b);
-    // printf("Input polys:\n");
-    // affichage(a);
-    // affichage(b);
-
-    // printf("Toom3\n");
-    // affichage(toom3(a,b));
-    // affichage(prodPoly(a,b));
-
 }
