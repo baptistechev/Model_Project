@@ -14,7 +14,9 @@
 
 /*Tests temps exec*/
 double timeI;
+double timeCM;
 /*----------------*/
+
 /*--Variables globales--*/
 __uint32_t N;
 __uint32_t *vanMonMatrix;
@@ -97,9 +99,20 @@ poly32_t static inline constantMult(poly32_t p, int k){
     /*
     *   Multiplie les coefficients du polynome p par k.
     */
+    // clock_t start, end;
+    // double cpu_time_used;
+    // start = clock();
+
     poly32_t q = allocate(p->length);
     for(int i=0;i<p->length;i++) q->coeffs[i] = prod(p->coeffs[i],k);
+
+    // end = clock();
+    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    // timeCM+=cpu_time_used;
+    
     return q;
+
+ 
 }
 
 void static inline affichage(poly32_t p){
@@ -191,9 +204,9 @@ poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
     *   Retourne la liste de polynome r0...r4 correspondant au resultat de l'interpolation 
     *   des valuation R0...R4 avec la matrice de Vandermonde
     */
-    clock_t start, end;
-    double cpu_time_used;
-    start = clock();
+    // clock_t start, end;
+    // double cpu_time_used;
+    // start = clock();
 
     poly32_t* lret=malloc(5*sizeof(poly32_t));
     poly32_t* L=malloc(5*sizeof(poly32_t));
@@ -215,9 +228,9 @@ poly32_t* interpol(poly32_t R0,poly32_t R1,poly32_t R2,poly32_t R3,poly32_t R4){
 
     }
 
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    timeI+=cpu_time_used; 
+    // end = clock();
+    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    // timeI+=cpu_time_used; 
     
     return lret;
 }

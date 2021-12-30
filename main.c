@@ -181,7 +181,7 @@ int main(int argc, char** argv){
 
     // printf("%u\n",add(e,f));
 
-    int size = 15000;
+    int size = 10000;
 
     poly32_t a = allocate(size);
     poly32_t b = allocate(size);
@@ -202,11 +202,15 @@ int main(int argc, char** argv){
     //printf("mod %d\n",modInverse(1));
     
     timeI=0;
-    timeProd(prodPoly,a,b);
+    timeCM=0;
+    //timeProd(prodPoly,a,b);
     timeProd(karatsuba,a,b);
     timeI=0;
+    timeCM=0;
     timeProd(toom3,a,b);
     printf("timeInterpol:%lf\n",timeI);
+    printf("timeCM:%lf\n",timeCM);
+
     // printf("Input polys:\n");
     // affichage(a);
     // affichage(b);
