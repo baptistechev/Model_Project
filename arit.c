@@ -38,6 +38,11 @@ poly32_t allocate(long length){
     return p;
 }
 
+void deallocate(poly32_t p){
+    free(p->coeffs);
+    free(p);
+}
+
 poly32_t static inline copyTo(poly32_t p, poly32_t q){
     for(int i=0;i<p->length;i++) 
         q->coeffs[i] = p->coeffs[i];
