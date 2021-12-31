@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define T 100 //Threshold pour karatsuba, degre minimum pour utiliser Ka plutot que naif
+#define Tk 50 //Threshold pour karatsuba, degre minimum pour utiliser Ka plutot que naif
+#define Ttc 250 //Threshold pour toom-3, degre minimum pour utiliser Toom-3 plutot que Kara
 
 poly32_t static inline timeProd(poly32_t (*f)(poly32_t,poly32_t), poly32_t a, poly32_t b){
     /* 
@@ -20,6 +21,75 @@ poly32_t static inline timeProd(poly32_t (*f)(poly32_t,poly32_t), poly32_t a, po
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     printf("Time : %f\n", cpu_time_used);
     return res;
+}
+
+double static inline timeProd2(poly32_t (*f)(poly32_t,poly32_t), poly32_t a, poly32_t b){
+    /* 
+    *   Retourne le temps de calcul d'une fonction f calculant le produit de deux polynomes et renvoit la sortie de f
+    */
+    clock_t start, end;
+    double cpu_time_used;
+    poly32_t res;
+
+    start = clock();
+        res = (*f)(a,b);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    //printf("Time : %f\n", cpu_time_used);
+    return cpu_time_used;
+}
+
+void executionTests(poly32_t (*f1)(poly32_t,poly32_t),poly32_t (*f2)(poly32_t,poly32_t),int maxDeg){
+    FILE *tab = fopen("Tab.csv","w");
+
+    for (int i = 100; i <3000; i=i+100)
+    {   
+        thresh=i;
+        poly32_t a = allocate(20000);
+        poly32_t b = allocate(20000);
+
+        srand(time(NULL));
+
+        for(int j=0;j<20000;j++){
+            a->coeffs[i] = rand()%N; 
+            b->coeffs[i] = rand()%N;
+        }
+
+        //double t1=timeProd2(f1,a,b);
+        double t1=0;
+        double t2=timeProd2(f2,a,b);
+        fprintf(tab,"%d,%lf,%lf,%lf\n",i,t1,t2,t2-t1);
+            
+    }
+
+    fclose(tab);
+    
+}
+
+void executionTests2(poly32_t (*f1)(poly32_t,poly32_t),poly32_t (*f2)(poly32_t,poly32_t),int maxDeg){
+    FILE *tab = fopen("Tab.csv","w");
+
+    for (int i = 1; i <maxDeg; i=i+100)
+    {   
+        poly32_t a = allocate(i);
+        poly32_t b = allocate(i);
+
+        srand(time(NULL));
+
+        for(int j=0;j<i;j++){
+            a->coeffs[i] = rand()%N; 
+            b->coeffs[i] = rand()%N;
+        }
+
+        //double t1=timeProd2(f1,a,b);
+        double t1=timeProd2(f1,a,b);
+        double t2=timeProd2(f2,a,b);
+        fprintf(tab,"%d,%lf,%lf,%lf\n",i,t1,t2,t2-t1);
+            
+    }
+
+    fclose(tab);
+    
 }
 
 poly32_t* splitPoly(poly32_t p, __uint32_t k){
@@ -45,7 +115,7 @@ poly32_t static inline karatsuba(poly32_t p, poly32_t q){
 
     // Si l'un des polynomes est de degre inferieur au parametre T
     // on utilise l'algorithme de multiplication naif.
-    if(d-1 <= T) return prodPoly(p,q); 
+    if(d-1 <= Tk) return prodPoly(p,q); 
 
     __uint32_t k = (__uint32_t)floor(d/2) + 1;
 
@@ -105,14 +175,17 @@ poly32_t static inline toom3(poly32_t p, poly32_t q){
     *   Performe la multiplication de deux polynomes en utilisant l'algorithme de toom-cook 
     */
 
+   int d=max(p->length,q->length);
+    if(d<Ttc){
+        return karatsuba(p,q);
+    }
+
     __uint32_t k = max(floor(p->length/3),floor(q->length/3))+1;
-    // if(d-1 <= T) return prodPoly(p,q); 
+    //if(d-1 <= T) return prodPoly(p,q); 
 
     // __uint32_t k = (__uint32_t)floor(d/2) + 1;
     
-    if(k<3){
-        return prodPoly(p,q);
-    }
+    
 
     poly32_t *res;
     poly32_t p0,p1,p2,q0,q1,q2;
@@ -182,17 +255,18 @@ int main(int argc, char** argv){
     //Initialisation of vandermonde matrix in current prime field
     initVandermonde();
 
-    int size = 15000;
+    executionTests2(karatsuba,toom3,20000);
+    // int size = 15000;
 
-    poly32_t a = allocate(size);
-    poly32_t b = allocate(size);
+    // poly32_t a = allocate(size);
+    // poly32_t b = allocate(size);
 
-    srand(time(NULL));
+    // srand(time(NULL));
 
-    for(int i=0;i<size;i++){
-        a->coeffs[i] = rand()%N; 
-        b->coeffs[i] = rand()%N;
-    }
+    // for(int i=0;i<size;i++){
+    //     a->coeffs[i] = rand()%N; 
+    //     b->coeffs[i] = rand()%N;
+    // }
 
     // __uint32_t ac[] = {5%N,1%N,2%N,0,0,8%N,0,2%N,0,3%N};
     // __uint32_t bc[] = {1%N,3%N,0,2%N,0,8%N,0,0,7%N};
@@ -200,15 +274,15 @@ int main(int argc, char** argv){
     //a->coeffs = ac;
     //b->coeffs = bc;
     
-    timeI=0;
-    timeCM=0;
-    //timeProd(prodPoly,a,b);
-    timeProd(karatsuba,a,b);
-    timeI=0;
-    timeCM=0;
-    timeProd(toom3,a,b);
-    printf("timeInterpol:%lf\n",timeI);
-    printf("timeCM:%lf\n",timeCM);
+    // timeI=0;
+    // timeCM=0;
+    // //timeProd(prodPoly,a,b);
+    // timeProd(karatsuba,a,b);
+    // timeI=0;
+    // timeCM=0;
+    // timeProd(toom3,a,b);
+    // printf("timeInterpol:%lf\n",timeI);
+    // printf("timeCM:%lf\n",timeCM);
 
     // printf("Input polys:\n");
     // affichage(a);
@@ -218,6 +292,6 @@ int main(int argc, char** argv){
     // affichage(toom3(a,b));
     // affichage(prodPoly(a,b));
 
-    deallocate(a);
-    deallocate(b);
+    // deallocate(a);
+    // deallocate(b);
 }
