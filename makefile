@@ -9,7 +9,7 @@ CFLAGS=-Wall -std=c99
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-main: arit.o main.o
+main: arit.o poly.o karatsuba.o toom.o expe.o main.o
 	$(CC) $(CFLAGS) main.o -o main
 
 clean:
